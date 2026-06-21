@@ -23,21 +23,77 @@ function readHash() {
   return window.location.hash.replace(/^#\/?/, '')
 }
 
+const DESKTOP_QUERY = '(min-width: 880px)'
+const NAV_PREF_KEY = 'dojo:nav'
+
+// Track whether we're at the desktop/tablet breakpoint where the sidebar can
+// live inline, vs. the phone breakpoint where it becomes an overlay drawer.
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY)
+    const onChange = () => setIsDesktop(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
+}
+
 export default function App() {
   const parts = useParts()
+  const isDesktop = useIsDesktop()
   const [current, setCurrent] = useState<string>(readHash())
-  const [navOpen, setNavOpen] = useState(false)
+
+  // Desktop: a persisted collapse preference (open by default).
+  // Mobile: a transient overlay drawer that always starts closed.
+  const [desktopOpen, setDesktopOpen] = useState(() => {
+    const saved = localStorage.getItem(NAV_PREF_KEY)
+    return saved == null ? true : saved === 'open'
+  })
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const navOpen = isDesktop ? desktopOpen : mobileOpen
+
+  const toggleNav = () => {
+    if (isDesktop) {
+      setDesktopOpen((o) => {
+        const next = !o
+        localStorage.setItem(NAV_PREF_KEY, next ? 'open' : 'closed')
+        return next
+      })
+    } else {
+      setMobileOpen((o) => !o)
+    }
+  }
+
+  const closeMobileNav = () => setMobileOpen(false)
 
   // Keep the view in sync with the URL hash so links and the back button work.
   useEffect(() => {
     const onHash = () => {
       setCurrent(readHash())
-      setNavOpen(false)
+      setMobileOpen(false)
       window.scrollTo({ top: 0 })
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  // Let Escape dismiss the mobile drawer, and lock body scroll behind it.
+  useEffect(() => {
+    if (isDesktop || !mobileOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [isDesktop, mobileOpen])
 
   const lesson = lessons.find((l) => l.id === current)
   const index = lessons.findIndex((l) => l.id === current)
@@ -45,14 +101,16 @@ export default function App() {
   const next = index >= 0 && index < lessons.length - 1 ? lessons[index + 1] : null
 
   return (
-    <div className="layout">
+    <div className={`layout ${navOpen ? 'nav-open' : 'nav-closed'}`}>
       <header className="topbar">
         <button
           className="nav-toggle"
-          onClick={() => setNavOpen((o) => !o)}
-          aria-label="Toggle navigation"
+          onClick={toggleNav}
+          aria-label={navOpen ? 'Collapse navigation' : 'Open navigation'}
+          aria-expanded={navOpen}
+          aria-controls="dojo-sidebar"
         >
-          ☰
+          <span aria-hidden="true">{navOpen ? '✕' : '☰'}</span>
         </button>
         <a className="brand" href="#/">
           <span className="brand-mark">和</span>
@@ -67,8 +125,15 @@ export default function App() {
       </header>
 
       <div className="body">
-        <aside className={`sidebar ${navOpen ? 'open' : ''}`}>
-          <nav>
+        {!isDesktop && mobileOpen && (
+          <div className="nav-backdrop" onClick={closeMobileNav} aria-hidden="true" />
+        )}
+        <aside
+          id="dojo-sidebar"
+          className={`sidebar ${navOpen ? 'open' : ''}`}
+          inert={!navOpen ? true : undefined}
+        >
+          <nav className="sidebar-inner">
             <a href="#/" className={`nav-home ${!lesson ? 'active' : ''}`}>
               Welcome
             </a>

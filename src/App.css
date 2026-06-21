@@ -76,7 +76,8 @@
 }
 
 .nav-toggle {
-  display: none;
+  display: grid;
+  place-items: center;
   background: none;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
@@ -85,6 +86,11 @@
   font-size: 16px;
   cursor: pointer;
   color: var(--ink);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.nav-toggle:hover {
+  border-color: var(--ink);
+  background: var(--paper-raised);
 }
 
 /* ---------- Body / sidebar ---------- */
@@ -92,15 +98,37 @@
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
   align-items: start;
+  transition: grid-template-columns 0.24s ease;
+}
+.layout.nav-closed .body {
+  grid-template-columns: 0 1fr;
 }
 
 .sidebar {
   position: sticky;
   top: 64px;
   height: calc(100vh - 64px);
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 28px 18px 60px;
   border-right: 1px solid var(--line);
+}
+/* Fixed-width inner keeps the nav from reflowing as the column collapses,
+   so it reads as a clean slide rather than text squashing. */
+.sidebar-inner {
+  width: var(--sidebar-w);
+  padding: 28px 18px 60px;
+  transition: opacity 0.18s ease;
+}
+.layout.nav-closed .sidebar {
+  border-right-color: transparent;
+}
+.layout.nav-closed .sidebar-inner {
+  opacity: 0;
+}
+
+/* Backdrop only matters for the mobile drawer; hidden elsewhere. */
+.nav-backdrop {
+  display: none;
 }
 
 .nav-home,
@@ -657,29 +685,50 @@
   border-radius: 5px;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 880px) {
-  .body {
+/* ---------- Responsive: phone drawer (below the desktop breakpoint) ---------- */
+@media (max-width: 879.98px) {
+  /* Content always spans the full width; the sidebar floats above it. */
+  .body,
+  .layout.nav-closed .body {
     grid-template-columns: 1fr;
+    transition: none;
   }
-  .nav-toggle {
-    display: grid;
-    place-items: center;
-  }
+
   .sidebar {
     position: fixed;
     top: 64px;
     left: 0;
-    width: min(82vw, 320px);
+    height: calc(100vh - 64px);
+    width: min(86vw, 320px);
     background: var(--paper);
     transform: translateX(-105%);
-    transition: transform 0.2s ease;
+    transition: transform 0.24s ease;
     z-index: 25;
     box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.4);
   }
   .sidebar.open {
     transform: translateX(0);
   }
+  /* Reset the desktop collapse styling inside the drawer. */
+  .sidebar-inner {
+    width: 100%;
+    opacity: 1;
+  }
+  .layout.nav-closed .sidebar {
+    border-right-color: var(--line);
+  }
+
+  /* Dim the page behind the open drawer; tap to dismiss. */
+  .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 64px 0 0;
+    background: rgba(20, 26, 22, 0.38);
+    backdrop-filter: blur(1.5px);
+    z-index: 24;
+    animation: backdrop-in 0.2s ease;
+  }
+
   .content {
     padding: 36px 22px 100px;
   }
@@ -698,5 +747,49 @@
   }
   .lesson-nav-btn {
     max-width: 100%;
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Responsive: small phones ---------- */
+@media (max-width: 540px) {
+  .topbar {
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .brand-text small {
+    display: none;
+  }
+  .topbar-repo {
+    font-size: 0;
+    padding: 8px;
+  }
+  .topbar-repo::before {
+    margin-right: 0;
+  }
+  .welcome-title {
+    font-size: 32px;
+  }
+  .lesson-title {
+    font-size: 28px;
+  }
+  .content {
+    padding: 28px 16px 90px;
+  }
+}
+
+/* ---------- Respect reduced-motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .body,
+  .sidebar,
+  .sidebar-inner,
+  .nav-backdrop {
+    transition: none;
+    animation: none;
   }
 }
