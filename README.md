@@ -51,6 +51,8 @@ This project uses a current, mainstream testing setup.
 ## Getting started
 
 ```bash
+git clone git@github.com:edriso/testing-dojo.git
+cd testing-dojo
 npm install      # install dependencies
 npm run dev      # start the learning app at http://localhost:5173
 ```
