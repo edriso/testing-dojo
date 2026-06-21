@@ -1,0 +1,105 @@
+/* ============================================================
+   The Testing Dojo - design system
+   A calm, editorial reading experience. Warm paper, deep ink,
+   one confident green accent (the colour of a passing test).
+   ============================================================ */
+
+:root {
+  /* Palette - light, warm, scholarly */
+  --paper: #fbf9f4;
+  --paper-raised: #ffffff;
+  --ink: #1f2421;
+  --ink-soft: #4a544d;
+  --ink-faint: #7b857d;
+  --line: #e7e2d6;
+  --line-strong: #d6cfbe;
+
+  /* Accents */
+  --pass: #2e7d52; /* green - the colour of a green test */
+  --pass-soft: #e6f0e9;
+  --fail: #c0392b; /* red - a failing test */
+  --fail-soft: #f7e7e4;
+  --amber: #b47216;
+  --amber-soft: #f6ecd9;
+  --info: #2b6cb0;
+  --info-soft: #e4eef8;
+
+  /* Code surface - dark, high contrast */
+  --code-bg: #1c2620;
+  --code-fg: #e9e6dd;
+  --code-comment: #7e9a8a;
+  --code-keyword: #8fd7a0;
+  --code-string: #e6c884;
+  --code-number: #d99ca6;
+  --code-fn: #88c0d0;
+  --code-punct: #9aa69e;
+
+  /* Type */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Geometry */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --maxw: 760px;
+  --sidebar-w: 300px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--pass);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--pass) 30%, transparent);
+  transition: border-color 0.15s ease;
+}
+a:hover {
+  border-color: var(--pass);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--pass-soft);
+}
+
+/* Thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
