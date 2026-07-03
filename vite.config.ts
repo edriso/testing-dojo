@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/testing-dojo/',
   plugins: [react()],
   test: {
     // Tests run against a real-ish browser DOM provided by jsdom.
